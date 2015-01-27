@@ -18,6 +18,19 @@ gUrl = 'https://www.googleapis.com/urlshortener/v1/url'
 # Already posted links
 alreadyPosted = [line.strip() for line in open('PostedLinks.txt')]
 
+def processSubmission(post):
+    postTitle = post.title
+    url = post.url
+    redditURL = post.short_link
+    return postTitle, url, redditURL
+	 
+def shortenURL(url):
+    data = json.dumps({'longUrl': url})
+    r = requests.post(gUrl, data, headers={'Content-Type': 'application/json'})
+    j = json.loads(r.text)
+    sURL = j['id']
+    return sURL
+
 # Function for sending emails containing deal information
 def sendemail(from_addr, to_addr_list, cc_addr_list,
               subject, message,
@@ -45,19 +58,14 @@ while(True):
     for submission in subreddit.get_new(limit=25):
         if submission.id not in alreadyPosted:
             
-            postTitle = submission.title
-            url = submission.url
-            redditURL = submission.short_link
-            
-            data = json.dumps({'longUrl': url})
-            r = requests.post(gUrl, data, headers={'Content-Type': 'application/json'})
-            j = json.loads(r.text)
-            sURL = j['id']
+            postTitle, url, redditURL = processSubmission(submission)
+			
+            sURL = shortenURL(url)
             
             if len(postTitle) > 115:
                 postTitle = postTitle[0:116]
                 postTitle += "-"
-              
+				
             try:
                 tStatus = ""+postTitle+" "+sURL
                 twitter.update_status(status=tStatus)
@@ -65,6 +73,8 @@ while(True):
                 del alreadyPosted[-1]
             except TwythonError as e:
                 print(e)
+            except Exception as ee:
+	       	print(ee)
             
             #loginN = "gmail account"
             #passw = "gmail password"
