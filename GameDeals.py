@@ -94,8 +94,8 @@ while(True):
 			f.write(""+post+"\n")
 		f.close()
 		time.sleep(900)
-	except Exception as r:
+	except Exception as e:
 		print "Error with connection \n"
 		print(e)
-		sleep(900)
+		time.sleep(900)
             
